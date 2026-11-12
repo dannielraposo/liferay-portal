@@ -347,6 +347,7 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		super.testGetSiteSitePageSitePagesPage();
 
 		_testGetSiteSitePageSitePagesPageWithContentPage();
+		_testGetSiteSitePageSitePagesPageWithFilter();
 		_testGetSiteSitePageSitePagesPageWithFlatten();
 		_testGetSiteSitePageSitePagesPageWithPageSpecificationVersionsNestedField();
 		_testGetSiteSitePageSitePagesPageWithPermissions();
@@ -2505,7 +2506,7 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		for (Boolean flatten : new Boolean[] {null, true}) {
 			Page<SitePage> page = sitePageResource.getSiteSitePageSitePagesPage(
 				testGroup.getExternalReferenceCode(),
-				parentLayout.getExternalReferenceCode(), flatten,
+				parentLayout.getExternalReferenceCode(), flatten, null,
 				Pagination.of(1, 10));
 
 			Assert.assertEquals(1, page.getTotalCount());
@@ -2513,6 +2514,56 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 			_assertExternalReferenceCodes(
 				Collections.singletonList(childLayout), page);
 		}
+	}
+
+	private void _testGetSiteSitePageSitePagesPageWithFilter()
+		throws Exception {
+
+		Layout parentLayout = LayoutTestUtil.addTypePortletLayout(testGroup);
+
+		Layout childLayout = LayoutTestUtil.addTypePortletLayout(
+			testGroup, parentLayout.getPlid());
+
+		Layout grandchildLayout = LayoutTestUtil.addTypeContentLayout(
+			testGroup, childLayout.getPlid());
+
+		Layout siblingLayout = LayoutTestUtil.addTypePortletLayout(testGroup);
+
+		String filterString = StringBundler.concat(
+			"externalReferenceCode in ('",
+			childLayout.getExternalReferenceCode(), "', '",
+			grandchildLayout.getExternalReferenceCode(), "', '",
+			siblingLayout.getExternalReferenceCode(), "')");
+
+		Page<SitePage> page = sitePageResource.getSiteSitePageSitePagesPage(
+			testGroup.getExternalReferenceCode(),
+			parentLayout.getExternalReferenceCode(), null, filterString,
+			Pagination.of(1, 10));
+
+		Assert.assertEquals(1, page.getTotalCount());
+
+		_assertExternalReferenceCodes(
+			Collections.singletonList(childLayout), page);
+
+		page = sitePageResource.getSiteSitePageSitePagesPage(
+			testGroup.getExternalReferenceCode(),
+			parentLayout.getExternalReferenceCode(), true, filterString,
+			Pagination.of(1, 10));
+
+		Assert.assertEquals(2, page.getTotalCount());
+
+		_assertExternalReferenceCodes(
+			Arrays.asList(childLayout, grandchildLayout), page);
+
+		page = sitePageResource.getSiteSitePageSitePagesPage(
+			testGroup.getExternalReferenceCode(),
+			childLayout.getExternalReferenceCode(), true,
+			StringBundler.concat(
+				"externalReferenceCode eq '",
+				siblingLayout.getExternalReferenceCode(), "'"),
+			Pagination.of(1, 10));
+
+		Assert.assertEquals(0, page.getTotalCount());
 	}
 
 	private void _testGetSiteSitePageSitePagesPageWithFlatten()
@@ -2530,7 +2581,7 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 
 		Page<SitePage> page = sitePageResource.getSiteSitePageSitePagesPage(
 			testGroup.getExternalReferenceCode(),
-			parentLayout.getExternalReferenceCode(), null,
+			parentLayout.getExternalReferenceCode(), null, null,
 			Pagination.of(1, 10));
 
 		Assert.assertEquals(2, page.getTotalCount());
@@ -2540,7 +2591,7 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 
 		page = sitePageResource.getSiteSitePageSitePagesPage(
 			testGroup.getExternalReferenceCode(),
-			parentLayout.getExternalReferenceCode(), true,
+			parentLayout.getExternalReferenceCode(), true, null,
 			Pagination.of(1, 10));
 
 		Assert.assertEquals(3, page.getTotalCount());
@@ -2551,7 +2602,8 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 
 		page = sitePageResource.getSiteSitePageSitePagesPage(
 			testGroup.getExternalReferenceCode(),
-			parentLayout.getExternalReferenceCode(), true, Pagination.of(2, 2));
+			parentLayout.getExternalReferenceCode(), true, null,
+			Pagination.of(2, 2));
 
 		Assert.assertEquals(3, page.getTotalCount());
 
@@ -2560,7 +2612,7 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 
 		page = sitePageResource.getSiteSitePageSitePagesPage(
 			testGroup.getExternalReferenceCode(),
-			childlessLayout.getExternalReferenceCode(), true,
+			childlessLayout.getExternalReferenceCode(), true, null,
 			Pagination.of(1, 10));
 
 		Assert.assertEquals(0, page.getTotalCount());
@@ -2583,7 +2635,7 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		Page<SitePage> sitePagesPage =
 			sitePageResource.getSiteSitePageSitePagesPage(
 				testGroup.getExternalReferenceCode(),
-				parentLayout.getExternalReferenceCode(), null,
+				parentLayout.getExternalReferenceCode(), null, null,
 				Pagination.of(1, 10));
 
 		List<SitePage> sitePages = new ArrayList<>(sitePagesPage.getItems());
@@ -2609,7 +2661,7 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 
 		Page<SitePage> page = sitePageResource.getSiteSitePageSitePagesPage(
 			testGroup.getExternalReferenceCode(),
-			parentLayout.getExternalReferenceCode(), null,
+			parentLayout.getExternalReferenceCode(), null, null,
 			Pagination.of(1, 10));
 
 		SitePage sitePage = page.fetchFirstItem();
@@ -2628,7 +2680,8 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 			HttpInvoker.HttpResponse httpResponse =
 				sitePageResource.getSiteSitePageSitePagesPageHttpResponse(
 					testGroup.getExternalReferenceCode(),
-					RandomTestUtil.randomString(), null, Pagination.of(1, 10));
+					RandomTestUtil.randomString(), null, null,
+					Pagination.of(1, 10));
 
 			Assert.assertEquals(404, httpResponse.getStatusCode());
 		}
@@ -2649,15 +2702,22 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 			panelLayout.getPlid(), parentLayout.getPlid());
 
 		for (Boolean flatten : new Boolean[] {null, true}) {
-			Page<SitePage> page = sitePageResource.getSiteSitePageSitePagesPage(
-				testGroup.getExternalReferenceCode(),
-				parentLayout.getExternalReferenceCode(), flatten,
-				Pagination.of(1, 10));
+			for (String filterString :
+					new String[] {
+						"dateModified ge 2000-01-01T00:00:00Z", null
+					}) {
 
-			Assert.assertEquals(1, page.getTotalCount());
+				Page<SitePage> page =
+					sitePageResource.getSiteSitePageSitePagesPage(
+						testGroup.getExternalReferenceCode(),
+						parentLayout.getExternalReferenceCode(), flatten,
+						filterString, Pagination.of(1, 10));
 
-			_assertExternalReferenceCodes(
-				Collections.singletonList(childLayout), page);
+				Assert.assertEquals(1, page.getTotalCount());
+
+				_assertExternalReferenceCodes(
+					Collections.singletonList(childLayout), page);
+			}
 		}
 	}
 
@@ -2692,7 +2752,7 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 
 		Page<SitePage> page = sitePageResource.getSiteSitePageSitePagesPage(
 			testGroup.getExternalReferenceCode(),
-			parentLayout.getExternalReferenceCode(), true,
+			parentLayout.getExternalReferenceCode(), true, null,
 			Pagination.of(1, 10));
 
 		Assert.assertEquals(3, page.getTotalCount());
@@ -2705,15 +2765,21 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 			user.getEmailAddress(), password);
 
 		for (Boolean flatten : new Boolean[] {null, true}) {
-			page = userSitePageResource.getSiteSitePageSitePagesPage(
-				testGroup.getExternalReferenceCode(),
-				parentLayout.getExternalReferenceCode(), flatten,
-				Pagination.of(1, 10));
+			for (String filterString :
+					new String[] {
+						"dateModified ge 2000-01-01T00:00:00Z", null
+					}) {
 
-			Assert.assertEquals(1, page.getTotalCount());
+				page = userSitePageResource.getSiteSitePageSitePagesPage(
+					testGroup.getExternalReferenceCode(),
+					parentLayout.getExternalReferenceCode(), flatten,
+					filterString, Pagination.of(1, 10));
 
-			_assertExternalReferenceCodes(
-				Collections.singletonList(viewableLayout), page);
+				Assert.assertEquals(1, page.getTotalCount());
+
+				_assertExternalReferenceCodes(
+					Collections.singletonList(viewableLayout), page);
+			}
 		}
 	}
 
