@@ -62,6 +62,7 @@ import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.filter.ExistsFilter;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.search.filter.TermFilter;
+import com.liferay.portal.kernel.search.filter.TermsFilter;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.LayoutLocalService;
@@ -254,7 +255,7 @@ public class SitePageResourceImpl
 	public Page<SitePage> getSiteSitePageSitePagesPage(
 			String siteExternalReferenceCode,
 			String sitePageExternalReferenceCode, Boolean flatten,
-			Pagination pagination)
+			Filter filter, Pagination pagination)
 		throws Exception {
 
 		Layout layout = SitePageUtil.getSitePageLayout(
@@ -273,6 +274,49 @@ public class SitePageResourceImpl
 		}
 		else {
 			layouts = layout.getChildren();
+		}
+
+		if (filter != null) {
+			if (layouts.isEmpty()) {
+				return Page.of(Collections.emptyList(), pagination, 0);
+			}
+
+			TermsFilter termsFilter = new TermsFilter(Field.ENTRY_CLASS_PK);
+
+			for (Layout curLayout : layouts) {
+				termsFilter.addValue(String.valueOf(curLayout.getPlid()));
+			}
+
+			return SearchUtil.search(
+				null,
+				booleanQuery -> {
+					BooleanFilter booleanFilter =
+						booleanQuery.getPreBooleanFilter();
+
+					booleanFilter.add(termsFilter, BooleanClauseOccur.MUST);
+				},
+				filter, Layout.class.getName(), null, pagination,
+				queryConfig -> queryConfig.setSelectedFieldNames(
+					Field.ENTRY_CLASS_PK),
+				searchContext -> {
+					searchContext.setAttribute(Field.TYPE, _TYPES);
+					searchContext.setAttribute(
+						"status", WorkflowConstants.STATUS_ANY);
+					searchContext.setAttribute(
+						"systemLayout", Boolean.FALSE.toString());
+					searchContext.setCompanyId(contextCompany.getCompanyId());
+					searchContext.setGroupIds(new long[] {layout.getGroupId()});
+				},
+				new Sort[] {
+					new Sort(
+						"parentLayoutId_Number_sortable", Sort.LONG_TYPE,
+						false),
+					new Sort(Field.PRIORITY, Sort.LONG_TYPE, false)
+				},
+				document -> _toSitePage(
+					_layoutService.getLayout(
+						GetterUtil.getLong(
+							document.get(Field.ENTRY_CLASS_PK)))));
 		}
 
 		List<Layout> sitePageLayouts = transform(
