@@ -351,9 +351,7 @@ describe('PageTreePicker', () => {
 			screen.getByText('Contact').closest('[role="treeitem"]')
 		).toHaveClass('disabled');
 
-		expect(
-			screen.queryByRole('checkbox', {name: 'Contact'})
-		).not.toBeInTheDocument();
+		expect(screen.getByRole('checkbox', {name: 'Contact'})).toBeDisabled();
 	});
 
 	it('renders the badge and the title of a page', async () => {
