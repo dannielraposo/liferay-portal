@@ -4,13 +4,14 @@
  */
 
 import ClayLoadingIndicator from '@clayui/loading-indicator';
+import {useField} from 'formik';
 import React from 'react';
 
 import {ExportImportProcess} from '../types/exportImportProcess';
 import {PortletDataHandlerSection} from '../types/portletDataHandler';
 import {PageTreeModalConfiguration} from './PageTreeModal';
 import SectionHeader from './SectionHeader';
-import {DateFilterValues} from './date_filter';
+import {DateFilterValues, toDateFilter} from './date_filter';
 import {
 	FormikFieldCheckbox,
 	FormikFieldContentSelector,
@@ -52,6 +53,9 @@ export default function DataSelection({
 	subtitle: string;
 	timeZoneId: string;
 }) {
+	const [{value: dateFilterValues}] =
+		useField<DateFilterValues>('dateFilterValues');
+
 	return (
 		<>
 			<SectionHeader
@@ -96,7 +100,13 @@ export default function DataSelection({
 						aria-labelledby={LABEL_ID}
 						commentsAndRatingsEnabled={commentsAndRatingsEnabled}
 						name="contentSelection"
-						pageTreeModalConfiguration={pageTreeModalConfiguration}
+						pageTreeModalConfiguration={{
+							...pageTreeModalConfiguration,
+							dateFilter: toDateFilter(
+								dateFilterValues,
+								timeZoneId
+							),
+						}}
 						portletDataHandlerSections={portletDataHandlerSections}
 						process={process}
 					/>
