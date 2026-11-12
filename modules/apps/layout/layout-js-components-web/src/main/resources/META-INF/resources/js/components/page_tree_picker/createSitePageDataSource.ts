@@ -12,7 +12,13 @@ import {
 	PageTreePickerSelectionEntry,
 } from '../../types/PageTreePicker';
 
+export interface DateModifiedRange {
+	endDate?: string;
+	startDate?: string;
+}
+
 export interface SitePage {
+	dateModified?: string;
 	externalReferenceCode: string;
 	name_i18n?: Record<string, string>;
 	parentSitePageExternalReferenceCode?: string | null;
@@ -29,7 +35,7 @@ export interface SitePageTreeSelection {
 }
 
 const FIELDS =
-	'externalReferenceCode,name_i18n,parentSitePageExternalReferenceCode,type';
+	'dateModified,externalReferenceCode,name_i18n,parentSitePageExternalReferenceCode,type';
 
 export const ROOT_ITEM_ID = 'liferay-page-tree-picker-root';
 
@@ -78,6 +84,26 @@ function getChildSitePagesPath(externalReferenceCode: string): string {
 	return `site-pages/${encodeURIComponent(externalReferenceCode)}/site-pages`;
 }
 
+function getDateModifiedFilter(
+	dateModifiedRange: DateModifiedRange | undefined
+): string | null {
+	const filters: string[] = [];
+
+	if (dateModifiedRange?.endDate) {
+		filters.push(`dateModified le ${dateModifiedRange.endDate}`);
+	}
+
+	if (dateModifiedRange?.startDate) {
+		filters.push(`dateModified ge ${dateModifiedRange.startDate}`);
+	}
+
+	if (!filters.length) {
+		return null;
+	}
+
+	return filters.join(' and ');
+}
+
 function getIcon(sitePage: SitePage): string {
 	if (sitePage.type === 'ContentPage') {
 		return 'page';
@@ -103,8 +129,31 @@ function getName(sitePage: SitePage): string {
 	);
 }
 
+function isInDateModifiedRange(
+	sitePage: SitePage,
+	dateModifiedRange: DateModifiedRange | undefined
+): boolean {
+	const {endDate, startDate} = dateModifiedRange ?? {};
+
+	if (!endDate && !startDate) {
+		return true;
+	}
+
+	if (!sitePage.dateModified) {
+		return false;
+	}
+
+	const dateModified = Date.parse(sitePage.dateModified);
+
+	return (
+		(!endDate || dateModified <= Date.parse(endDate)) &&
+		(!startDate || dateModified >= Date.parse(startDate))
+	);
+}
+
 function toAncestorItems(
-	ancestorSitePagesList: SitePage[][]
+	ancestorSitePagesList: SitePage[][],
+	dateModifiedRange: DateModifiedRange | undefined
 ): Array<PageTreePickerItem<SitePage | null>> {
 	const ancestorItems = new Map<
 		string,
@@ -115,7 +164,11 @@ function toAncestorItems(
 		ancestorSitePages.forEach((ancestorSitePage) =>
 			ancestorItems.set(
 				ancestorSitePage.externalReferenceCode,
-				toItem(ancestorSitePage, true)
+				toItem(
+					ancestorSitePage,
+					true,
+					!isInDateModifiedRange(ancestorSitePage, dateModifiedRange)
+				)
 			)
 		)
 	);
@@ -125,9 +178,16 @@ function toAncestorItems(
 
 function toItem(
 	sitePage: SitePage,
-	hasChildren: boolean
+	hasChildren: boolean,
+	disabled: boolean
 ): PageTreePickerItem<SitePage | null> {
 	return {
+		...(disabled && {
+			disabled,
+			title: Liferay.Language.get(
+				'this-page-was-not-modified-in-the-selected-date-range'
+			),
+		}),
 		hasChildren,
 		icon: getIcon(sitePage),
 		id: sitePage.externalReferenceCode,
@@ -166,16 +226,23 @@ export type SitePageDataSource = PageTreePickerDataSource<SitePage | null> & {
 };
 
 export default function createSitePageDataSource({
+	dateModifiedRange,
 	pageSize,
 	privateLayout,
 	siteExternalReferenceCode,
 }: {
+	dateModifiedRange?: DateModifiedRange;
 	pageSize: number;
 	privateLayout: boolean;
 	siteExternalReferenceCode: string;
 }): SitePageDataSource {
+	const dateModifiedFilter = getDateModifiedFilter(dateModifiedRange);
 	const descendantCountPromises = new Map<string, Promise<number>>();
+	const filterSearchParams: Record<string, string> = dateModifiedFilter
+		? {filter: dateModifiedFilter}
+		: {};
 	const hasChildrenPromises = new Map<string, Promise<boolean>>();
+	const registeredSitePages = new Map<string, SitePage>();
 	const sitePagePromises = new Map<string, Promise<SitePage | null>>();
 
 	const siteURL = `/o/headless-admin-site/v1.0/sites/${encodeURIComponent(
@@ -262,6 +329,7 @@ export default function createSitePageDataSource({
 					flatten: 'true',
 					pageSize: '1',
 					privateLayout: String(privateLayout),
+					...filterSearchParams,
 				})
 			).then(({totalCount}) => totalCount);
 
@@ -290,6 +358,7 @@ export default function createSitePageDataSource({
 	}
 
 	function registerSitePage(sitePage: SitePage) {
+		registeredSitePages.set(sitePage.externalReferenceCode, sitePage);
 		sitePagePromises.set(
 			sitePage.externalReferenceCode,
 			Promise.resolve(sitePage)
@@ -303,7 +372,8 @@ export default function createSitePageDataSource({
 			sitePages.map(async (sitePage) =>
 				toItem(
 					sitePage,
-					await hasChildSitePages(sitePage.externalReferenceCode)
+					await hasChildSitePages(sitePage.externalReferenceCode),
+					!isInDateModifiedRange(sitePage, dateModifiedRange)
 				)
 			)
 		);
@@ -366,8 +436,19 @@ export default function createSitePageDataSource({
 					fields: 'externalReferenceCode',
 					flatten: 'true',
 					pageSize: '1',
+					...filterSearchParams,
 				})
 			).then(({totalCount}) => totalCount)
+		);
+	}
+
+	function matches(item: PageTreePickerItem<SitePage | null>): boolean {
+		return (
+			item.page !== null &&
+			isInDateModifiedRange(
+				registeredSitePages.get(item.id) ?? item.page,
+				dateModifiedRange
+			)
 		);
 	}
 
@@ -388,6 +469,8 @@ export default function createSitePageDataSource({
 			)
 		).filter((sitePage): sitePage is SitePage => sitePage !== null);
 
+		sitePages.forEach((sitePage) => registerSitePage(sitePage));
+
 		const [ancestorSitePagesList, resolvedItems] = await Promise.all([
 			Promise.all(
 				sitePages.map((sitePage) => getAncestorSitePages(sitePage))
@@ -395,7 +478,10 @@ export default function createSitePageDataSource({
 			toItems(sitePages),
 		]);
 
-		return [...toAncestorItems(ancestorSitePagesList), ...resolvedItems];
+		return [
+			...toAncestorItems(ancestorSitePagesList, dateModifiedRange),
+			...resolvedItems,
+		];
 	}
 
 	async function search(
@@ -410,6 +496,7 @@ export default function createSitePageDataSource({
 				pageSize: String(pageSize),
 				privateLayout: String(privateLayout),
 				search: query,
+				...filterSearchParams,
 			})
 		);
 
@@ -423,7 +510,10 @@ export default function createSitePageDataSource({
 		]);
 
 		return {
-			ancestors: toAncestorItems(ancestorSitePagesList),
+			ancestors: toAncestorItems(
+				ancestorSitePagesList,
+				dateModifiedRange
+			),
 			items: items.map((item, index) => ({
 				...item,
 				path: ancestorSitePagesList[index].map(getName),
@@ -507,6 +597,7 @@ export default function createSitePageDataSource({
 		getChildren,
 		getRootItem,
 		getSubtreeCount,
+		matches,
 		resolveItems,
 		search,
 		toEntries,

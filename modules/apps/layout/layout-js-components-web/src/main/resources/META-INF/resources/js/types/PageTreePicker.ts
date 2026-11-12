@@ -11,6 +11,8 @@ export interface PageTreePickerDataSource<T = unknown> {
 
 	getSubtreeCount(item: PageTreePickerItem<T>): Promise<number>;
 
+	matches(item: PageTreePickerItem<T>): boolean;
+
 	resolveItems(
 		items: Array<PageTreePickerItem<T>>
 	): Promise<Array<PageTreePickerItem<T>>>;
