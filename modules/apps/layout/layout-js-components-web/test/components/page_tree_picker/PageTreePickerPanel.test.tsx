@@ -51,6 +51,7 @@ const DATA_SOURCE: PageTreePickerDataSource<string> = {
 			totalCount: 2,
 		}),
 	getSubtreeCount: () => Promise.resolve(0),
+	matches: () => true,
 	resolveItems: (items) => Promise.resolve(items),
 	search: (query) => {
 		const items = [
@@ -173,6 +174,7 @@ describe('PageTreePickerPanel', () => {
 				dataSource={{
 					getChildren: DATA_SOURCE.getChildren,
 					getSubtreeCount: () => Promise.reject(new Error()),
+					matches: DATA_SOURCE.matches,
 					resolveItems: DATA_SOURCE.resolveItems,
 					search: DATA_SOURCE.search,
 				}}
@@ -204,6 +206,7 @@ describe('PageTreePickerPanel', () => {
 				dataSource={{
 					getChildren: () => Promise.reject(error),
 					getSubtreeCount: DATA_SOURCE.getSubtreeCount,
+					matches: DATA_SOURCE.matches,
 					resolveItems: DATA_SOURCE.resolveItems,
 					search: DATA_SOURCE.search,
 				}}
