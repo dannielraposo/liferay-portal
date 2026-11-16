@@ -93,6 +93,7 @@ import jakarta.ws.rs.core.MultivaluedMap;
 
 import java.io.Serializable;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -268,7 +269,7 @@ public class SitePageResourceImpl
 		List<Layout> layouts = null;
 
 		if (GetterUtil.getBoolean(flatten)) {
-			layouts = layout.getAllChildren();
+			layouts = _getDescendantLayouts(layout);
 		}
 		else {
 			layouts = layout.getChildren();
@@ -708,6 +709,42 @@ public class SitePageResourceImpl
 		}
 
 		return null;
+	}
+
+	private List<Layout> _getDescendantLayouts(Layout layout) {
+		Map<Long, List<Layout>> childLayoutsMap = new HashMap<>();
+		List<Layout> parentLayouts = Collections.singletonList(layout);
+
+		while (!parentLayouts.isEmpty()) {
+			Map<Long, List<Layout>> layoutChildLayoutsMap =
+				_layoutLocalService.getLayoutChildLayouts(parentLayouts);
+
+			childLayoutsMap.putAll(layoutChildLayoutsMap);
+
+			parentLayouts = new ArrayList<>();
+
+			for (List<Layout> childLayouts : layoutChildLayoutsMap.values()) {
+				parentLayouts.addAll(childLayouts);
+			}
+		}
+
+		return _getDescendantLayouts(childLayoutsMap, layout.getPlid());
+	}
+
+	private List<Layout> _getDescendantLayouts(
+		Map<Long, List<Layout>> childLayoutsMap, long plid) {
+
+		List<Layout> descendantLayouts = new ArrayList<>();
+
+		for (Layout childLayout :
+				childLayoutsMap.getOrDefault(plid, Collections.emptyList())) {
+
+			descendantLayouts.add(childLayout);
+			descendantLayouts.addAll(
+				_getDescendantLayouts(childLayoutsMap, childLayout.getPlid()));
+		}
+
+		return descendantLayouts;
 	}
 
 	private OpenGraphSettings _getOpenGraphSettings(PageSettings pageSettings) {
