@@ -12,6 +12,12 @@ import {
 	PageTreePickerSelectionEntry,
 } from '../../types/PageTreePicker';
 
+interface ChildrenScan {
+	complete: boolean;
+	items: Array<PageTreePickerItem<SitePage | null>>;
+	nextPage: number;
+}
+
 export interface DateModifiedRange {
 	endDate?: string;
 	startDate?: string;
@@ -236,6 +242,7 @@ export default function createSitePageDataSource({
 	privateLayout: boolean;
 	siteExternalReferenceCode: string;
 }): SitePageDataSource {
+	const childrenScanPromises = new Map<string, Promise<ChildrenScan>>();
 	const dateModifiedFilter = getDateModifiedFilter(dateModifiedRange);
 	const descendantCountPromises = new Map<string, Promise<number>>();
 	const filterSearchParams: Record<string, string> = dateModifiedFilter
@@ -321,6 +328,43 @@ export default function createSitePageDataSource({
 		return ancestorSitePages;
 	}
 
+	function getChildrenURL(
+		parentItem: PageTreePickerItem<SitePage | null>,
+		page: number
+	): URL {
+		const searchParams = {
+			fields: FIELDS,
+			page: String(page),
+			pageSize: String(pageSize),
+		};
+
+		return parentItem.id === ROOT_ITEM_ID
+			? getURL('site-pages', {
+					...searchParams,
+					privateLayout: String(privateLayout),
+					sort: 'pageSettings/priority:asc',
+				})
+			: getURL(getChildSitePagesPath(parentItem.id), searchParams);
+	}
+
+	function getDescendantCount(
+		externalReferenceCode: string
+	): Promise<number> {
+		return getCachedPromise(
+			descendantCountPromises,
+			externalReferenceCode,
+			() =>
+				fetchPage(
+					getURL(getChildSitePagesPath(externalReferenceCode), {
+						fields: 'externalReferenceCode',
+						flatten: 'true',
+						pageSize: '1',
+						...filterSearchParams,
+					})
+				).then(({totalCount}) => totalCount)
+		);
+	}
+
 	function getSitePagesCount(): Promise<number> {
 		if (!sitePagesCountPromise) {
 			sitePagesCountPromise = fetchPage(
@@ -344,6 +388,12 @@ export default function createSitePageDataSource({
 	function hasChildSitePages(
 		externalReferenceCode: string
 	): Promise<boolean> {
+		if (dateModifiedFilter) {
+			return getDescendantCount(externalReferenceCode).then(
+				(descendantCount) => descendantCount > 0
+			);
+		}
+
 		return getCachedPromise(
 			hasChildrenPromises,
 			externalReferenceCode,
@@ -363,6 +413,48 @@ export default function createSitePageDataSource({
 			sitePage.externalReferenceCode,
 			Promise.resolve(sitePage)
 		);
+	}
+
+	function scanChildren(
+		parentItem: PageTreePickerItem<SitePage | null>,
+		itemsCount: number
+	): Promise<ChildrenScan> {
+		const childrenScanPromise = (
+			childrenScanPromises.get(parentItem.id) ??
+			Promise.resolve({complete: false, items: [], nextPage: 1})
+		).then(async (childrenScan) => {
+			let {complete, items, nextPage} = childrenScan;
+
+			while (!complete && items.length < itemsCount) {
+				const {items: sitePages, totalCount} = await fetchPage(
+					getChildrenURL(parentItem, nextPage)
+				);
+
+				sitePages.forEach((sitePage) => registerSitePage(sitePage));
+
+				const childItems = await toItems(sitePages);
+
+				complete = nextPage * pageSize >= totalCount;
+				items = [
+					...items,
+					...childItems.filter(
+						(childItem) =>
+							!childItem.disabled || childItem.hasChildren
+					),
+				];
+				nextPage++;
+			}
+
+			return {complete, items, nextPage};
+		});
+
+		childrenScanPromises.set(parentItem.id, childrenScanPromise);
+
+		childrenScanPromise.catch(() =>
+			childrenScanPromises.delete(parentItem.id)
+		);
+
+		return childrenScanPromise;
 	}
 
 	function toItems(
@@ -401,22 +493,18 @@ export default function createSitePageDataSource({
 			return {items: [getRootItem()], totalCount: 1};
 		}
 
-		const searchParams = {
-			fields: FIELDS,
-			page: String(page),
-			pageSize: String(pageSize),
-		};
+		if (dateModifiedFilter) {
+			const {items} = await scanChildren(parentItem, page * pageSize + 1);
 
-		const requestURL =
-			parentItem.id === ROOT_ITEM_ID
-				? getURL('site-pages', {
-						...searchParams,
-						privateLayout: String(privateLayout),
-						sort: 'pageSettings/priority:asc',
-					})
-				: getURL(getChildSitePagesPath(parentItem.id), searchParams);
+			return {
+				items: items.slice((page - 1) * pageSize, page * pageSize),
+				totalCount: items.length,
+			};
+		}
 
-		const {items, totalCount} = await fetchPage(requestURL);
+		const {items, totalCount} = await fetchPage(
+			getChildrenURL(parentItem, page)
+		);
 
 		items.forEach((sitePage) => registerSitePage(sitePage));
 
@@ -430,16 +518,7 @@ export default function createSitePageDataSource({
 			return getSitePagesCount();
 		}
 
-		return getCachedPromise(descendantCountPromises, item.id, () =>
-			fetchPage(
-				getURL(getChildSitePagesPath(item.id), {
-					fields: 'externalReferenceCode',
-					flatten: 'true',
-					pageSize: '1',
-					...filterSearchParams,
-				})
-			).then(({totalCount}) => totalCount)
-		);
+		return getDescendantCount(item.id);
 	}
 
 	function matches(item: PageTreePickerItem<SitePage | null>): boolean {
