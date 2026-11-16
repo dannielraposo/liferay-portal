@@ -615,7 +615,53 @@ describe('PageTreePickerModal', () => {
 		expect(await screen.findByText('2 items-selected')).toBeInTheDocument();
 	});
 
-	it('shows the pages not modified in the date range disabled', async () => {
+	it('fills each page of children with the pages to show in the date range', async () => {
+		mockSitePagesRoutes([
+			{
+				dateModified: '2026-11-10T00:00:00Z',
+				externalReferenceCode: 'archive-erc',
+				name_i18n: {'en-US': 'Archive'},
+			},
+			...Array.from({length: 3}, (_, index) => ({
+				dateModified: '2026-01-01T00:00:00Z',
+				externalReferenceCode: `old-archived-erc-${index}`,
+				name_i18n: {'en-US': `Old Archived ${index}`},
+				parentSitePageExternalReferenceCode: 'archive-erc',
+			})),
+			...Array.from({length: 3}, (_, index) => ({
+				dateModified: '2026-11-10T00:00:00Z',
+				externalReferenceCode: `new-archived-erc-${index}`,
+				name_i18n: {'en-US': `New Archived ${index}`},
+				parentSitePageExternalReferenceCode: 'archive-erc',
+			})),
+		]);
+
+		renderDateFilteredPageTreePickerModal({pageSize: 2});
+
+		expandTreeItem(await screen.findByText('Archive'));
+
+		expect(
+			await screen.findByRole('checkbox', {name: 'New Archived 1'})
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole('checkbox', {name: 'New Archived 0'})
+		).toBeInTheDocument();
+		expect(screen.queryByText(/Old Archived/)).not.toBeInTheDocument();
+
+		await userEvent.click(
+			screen.getByRole('button', {name: 'load-more-results'})
+		);
+
+		expect(
+			await screen.findByRole('checkbox', {name: 'New Archived 2'})
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole('button', {name: 'load-more-results'})
+		).not.toBeInTheDocument();
+		expect(screen.queryByText(/Old Archived/)).not.toBeInTheDocument();
+	});
+
+	it('shows the pages not modified in the date range disabled only when pages modified in the date range are below them', async () => {
 		mockSitePagesRoutes(DATED_SITE_PAGES);
 
 		renderDateFilteredPageTreePickerModal();
@@ -634,7 +680,7 @@ describe('PageTreePickerModal', () => {
 						'this-page-was-not-modified-in-the-selected-date-range',
 				})
 				.map((element) => element.textContent)
-		).toEqual(['Home', 'Products']);
+		).toEqual(['Products']);
 		expect(
 			screen.getByRole('treeitem', {name: 'Products'})
 		).toHaveAttribute('aria-disabled', 'true');
@@ -644,7 +690,7 @@ describe('PageTreePickerModal', () => {
 		expect(
 			screen.getByRole('checkbox', {name: 'News'})
 		).toBeInTheDocument();
-		expect(screen.getByRole('checkbox', {name: 'Home'})).toBeDisabled();
+		expect(screen.queryByText('Home')).not.toBeInTheDocument();
 		expect(screen.getByRole('checkbox', {name: 'Products'})).toBeDisabled();
 
 		expandTreeItem('Products');
@@ -652,8 +698,7 @@ describe('PageTreePickerModal', () => {
 		expect(
 			await screen.findByRole('checkbox', {name: 'Phones'})
 		).toBeInTheDocument();
-		expect(screen.getByText('Laptops')).toBeInTheDocument();
-		expect(screen.getByRole('checkbox', {name: 'Laptops'})).toBeDisabled();
+		expect(screen.queryByText('Laptops')).not.toBeInTheDocument();
 	});
 
 	it('subtracts a deselected page from the exact count', async () => {
