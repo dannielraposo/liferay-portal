@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {PageTreePickerModal} from '@liferay/layout-js-components-web';
+
 // eslint-disable-next-line @liferay/portal/no-cross-module-deep-import
 import {checkAccessibility} from '@liferay/layout-js-components-web/test/__lib__/index';
 import {render, screen} from '@testing-library/react';
@@ -18,7 +20,7 @@ import {
 } from '../../../../../../src/main/resources/META-INF/resources/revamp/js/utils/contentSelection';
 
 jest.mock('@liferay/layout-js-components-web', () => ({
-	PageTreePickerModal: () => null,
+	PageTreePickerModal: jest.fn(() => null),
 }));
 
 function renderLayoutSetControl(
@@ -48,6 +50,12 @@ function renderLayoutSetControl(
 }
 
 describe('LayoutSetControl', () => {
+	afterEach(() => {
+		(Liferay.Language.get as jest.Mock).mockImplementation(
+			(key: string) => key
+		);
+	});
+
 	it('shows the pages as partially selected when some pages are excluded', () => {
 		renderLayoutSetControl({
 			portletDataHandlerSelection: {
@@ -85,6 +93,66 @@ describe('LayoutSetControl', () => {
 				all: true,
 				privateLayout: false,
 			});
+
+			unmount();
+		}
+	});
+
+	it('names the pages after the available page sets', async () => {
+		const user = userEvent.setup();
+
+		(Liferay.Language.get as jest.Mock).mockImplementation((key: string) =>
+			key === 'select-x' ? 'Select {0}' : key
+		);
+
+		const layoutSets: Array<{
+			availableLayoutSetVisibilities: LayoutSetVisibility[];
+			label: string;
+			privateLayout: boolean;
+		}> = [
+			{
+				availableLayoutSetVisibilities: ['private'],
+				label: 'pages',
+				privateLayout: true,
+			},
+			{
+				availableLayoutSetVisibilities: ['public'],
+				label: 'pages',
+				privateLayout: false,
+			},
+			{
+				availableLayoutSetVisibilities: ['public', 'private'],
+				label: 'private-pages',
+				privateLayout: true,
+			},
+			{
+				availableLayoutSetVisibilities: ['public', 'private'],
+				label: 'public-pages',
+				privateLayout: false,
+			},
+		];
+
+		for (const layoutSet of layoutSets) {
+			const {unmount} = renderLayoutSetControl({
+				availableLayoutSetVisibilities:
+					layoutSet.availableLayoutSetVisibilities,
+				portletDataHandlerSelection: {
+					all: true,
+					privateLayout: layoutSet.privateLayout,
+				},
+			});
+
+			await user.click(
+				screen.getByRole('button', {name: `Select ${layoutSet.label}`})
+			);
+
+			expect(PageTreePickerModal).toHaveBeenLastCalledWith(
+				expect.objectContaining({
+					privateLayout: layoutSet.privateLayout,
+					rootItemLabel: layoutSet.label,
+				}),
+				expect.anything()
+			);
 
 			unmount();
 		}
