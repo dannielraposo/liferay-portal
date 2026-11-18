@@ -168,10 +168,12 @@ export type SitePageDataSource = PageTreePickerDataSource<SitePage | null> & {
 export default function createSitePageDataSource({
 	pageSize,
 	privateLayout,
+	rootItemLabel,
 	siteExternalReferenceCode,
 }: {
 	pageSize: number;
 	privateLayout: boolean;
+	rootItemLabel?: string;
 	siteExternalReferenceCode: string;
 }): SitePageDataSource {
 	const descendantCountPromises = new Map<string, Promise<number>>();
@@ -315,9 +317,11 @@ export default function createSitePageDataSource({
 			hasChildren: true,
 			icon: 'home',
 			id: ROOT_ITEM_ID,
-			label: privateLayout
-				? Liferay.Language.get('private-pages')
-				: Liferay.Language.get('public-pages'),
+			label:
+				rootItemLabel ??
+				(privateLayout
+					? Liferay.Language.get('private-pages')
+					: Liferay.Language.get('public-pages')),
 			page: null,
 			parentId: null,
 		};
