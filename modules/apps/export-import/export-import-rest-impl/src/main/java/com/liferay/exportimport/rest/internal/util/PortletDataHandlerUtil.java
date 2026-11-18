@@ -138,8 +138,10 @@ public class PortletDataHandlerUtil {
 					deletionSystemEventExporter.getDeletionSystemEventsCount(
 						portletDataContext);
 
-				boolean privateLayoutsEnabled = _isPrivateLayoutsEnabled(
-					group, portletScoped);
+				boolean privateLayoutsEnabled =
+					_isPrivateLayoutsEnabled(group, portletScoped) &&
+					(group.isLayoutSetPrototype() ||
+					 group.hasPrivateLayouts());
 
 				long privateDeletionSystemEventsCount = 0;
 				ManifestSummary privateManifestSummary = null;
