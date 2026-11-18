@@ -881,13 +881,15 @@ public class ExportPreviewResourceTest
 
 		LayoutTestUtil.addTypeContentLayout(_group, false, false);
 
-		PortletDataHandler portletDataHandler = _getPortletDataHandler(
-			exportPreviewResource.getSiteExportPreview(
-				_group.getExternalReferenceCode(), null, null, null, null, null,
-				null),
-			"PORTLET_DATA_" + LayoutAdminPortletKeys.LAYOUT_SET_LAYOUTS);
-
-		Assert.assertNull(_getChoice(portletDataHandler, "private-pages"));
+		Assert.assertNull(
+			_getChoice(
+				_getPortletDataHandler(
+					exportPreviewResource.getSiteExportPreview(
+						_group.getExternalReferenceCode(), null, null, null,
+						null, null, null),
+					"PORTLET_DATA_" +
+						LayoutAdminPortletKeys.LAYOUT_SET_LAYOUTS),
+				"private-pages"));
 	}
 
 	private String _toDateFilterType(Date startDate, Date endDate) {
