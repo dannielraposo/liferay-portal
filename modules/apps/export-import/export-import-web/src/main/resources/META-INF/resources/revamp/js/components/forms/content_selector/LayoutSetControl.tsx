@@ -29,25 +29,32 @@ interface Props {
 	portletDataHandlerSelection: PortletDataHandlerSelection | undefined;
 }
 
-function SelectPagesButton({
-	onClick,
+function getLayoutSetLabel({
+	availableLayoutSetVisibilities,
 	privateLayout,
 }: {
+	availableLayoutSetVisibilities: LayoutSetVisibility[];
+	privateLayout: boolean;
+}) {
+	if (availableLayoutSetVisibilities.length === 1) {
+		return Liferay.Language.get('pages');
+	}
+
+	return privateLayout
+		? Liferay.Language.get('private-pages')
+		: Liferay.Language.get('public-pages');
+}
+
+function SelectPagesButton({
+	layoutSetLabel,
+	onClick,
+}: {
+	layoutSetLabel: string;
 	onClick: () => void;
-	privateLayout?: boolean;
 }) {
 	return (
 		<ClayButton
-			aria-label={
-				privateLayout === undefined
-					? undefined
-					: sub(
-							Liferay.Language.get('select-x'),
-							privateLayout
-								? Liferay.Language.get('private-pages')
-								: Liferay.Language.get('public-pages')
-						)
-			}
+			aria-label={sub(Liferay.Language.get('select-x'), layoutSetLabel)}
 			className="font-weight-semi-bold"
 			displayType="link"
 			onClick={onClick}
@@ -123,6 +130,11 @@ export default function LayoutSetControl({
 
 	const isAll = isAllLayoutsSelected(portletDataHandlerSelection);
 
+	const layoutSetLabel = getLayoutSetLabel({
+		availableLayoutSetVisibilities,
+		privateLayout,
+	});
+
 	const selected = typeof portletDataHandlerSelection === 'object';
 
 	return (
@@ -158,8 +170,8 @@ export default function LayoutSetControl({
 						</div>
 
 						<SelectPagesButton
+							layoutSetLabel={layoutSetLabel}
 							onClick={() => setShowModal(true)}
-							privateLayout={privateLayout}
 						/>
 					</div>
 				</ClayLayout.ContentCol>
@@ -192,6 +204,7 @@ export default function LayoutSetControl({
 					}}
 					pageSize={pageSize}
 					privateLayout={privateLayout}
+					rootItemLabel={layoutSetLabel}
 					siteExternalReferenceCode={siteExternalReferenceCode}
 					title={title}
 				/>
