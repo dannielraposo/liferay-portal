@@ -962,6 +962,24 @@ describe('PageTreePickerModal', () => {
 		expect(requestURL.searchParams.get('privateLayout')).toBe('true');
 	});
 
+	it('labels the root with the given root item label', async () => {
+		render(
+			<PageTreePickerModal
+				onClose={() => {}}
+				onSubmit={() => {}}
+				privateLayout={true}
+				rootItemLabel="pages"
+				siteExternalReferenceCode="site-erc"
+			/>
+		);
+
+		expect(await screen.findByText('pages')).toBeInTheDocument();
+
+		await screen.findByText('Home');
+
+		expect(screen.queryByText('private-pages')).not.toBeInTheDocument();
+	});
+
 	it('stays open when the pages cannot be loaded', async () => {
 		fetch.mockResponse(async () => ({body: '', status: 500}));
 
