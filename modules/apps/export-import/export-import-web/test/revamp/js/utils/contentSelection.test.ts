@@ -13,9 +13,12 @@ import {
 	getSelectedDeletionCount,
 	getSelectedItemsCount,
 	isPrivateLayoutSelected,
+	selectAllLayouts,
 	toPortletDataHandlerSections,
 	withSelectedLayoutSetCount,
 } from '../../../../src/main/resources/META-INF/resources/revamp/js/utils/contentSelection';
+
+import type {ContentSelection} from '../../../../src/main/resources/META-INF/resources/revamp/js/components/forms/content_selector/ContentSelector';
 
 function mockLayoutSetSections({
 	privateAdditionCount = 5,
@@ -193,6 +196,48 @@ describe('contentSelection layout set counts', () => {
 
 		expect(portletDataHandler?.additionCount).toBe(5);
 		expect(portletDataHandler?.deletionCount).toBe(3);
+	});
+});
+
+describe('selectAllLayouts', () => {
+	it('keeps an empty content selection', () => {
+		expect(selectAllLayouts(null)).toBeNull();
+		expect(selectAllLayouts(undefined)).toBeUndefined();
+	});
+
+	it('keeps the sections without a page selection', () => {
+		const contentSelection: ContentSelection = {
+			'category.content': {JOURNAL: true},
+			'category.site_administration.build': {LOOK_AND_FEEL: true},
+		};
+
+		expect(selectAllLayouts(contentSelection)).toEqual(contentSelection);
+	});
+
+	it('selects all the pages of the selected visibility', () => {
+		expect(
+			selectAllLayouts({
+				'category.content': {JOURNAL: true},
+				'category.site_administration.build': {
+					LOOK_AND_FEEL: true,
+					[PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS]: {
+						all: false,
+						items: ['home'],
+						privateLayout: true,
+						subtrees: ['news'],
+					},
+				},
+			})
+		).toEqual({
+			'category.content': {JOURNAL: true},
+			'category.site_administration.build': {
+				LOOK_AND_FEEL: true,
+				[PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS]: {
+					all: true,
+					privateLayout: true,
+				},
+			},
+		});
 	});
 });
 
