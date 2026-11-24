@@ -64,6 +64,39 @@ export function isAllLayoutsSelected(
 	return !excludedItems.length && !excludedSubtrees.length;
 }
 
+export function selectAllLayouts(
+	contentSelection: ContentSelection | null | undefined
+): ContentSelection | null | undefined {
+	if (!contentSelection) {
+		return contentSelection;
+	}
+
+	return Object.fromEntries(
+		Object.entries(contentSelection).map(
+			([sectionKey, sectionSelection]) => {
+				const layoutSetSelection = sectionSelection[
+					PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS
+				] as LayoutSetSelection | true | undefined;
+
+				if (!layoutSetSelection || layoutSetSelection === true) {
+					return [sectionKey, sectionSelection];
+				}
+
+				return [
+					sectionKey,
+					{
+						...sectionSelection,
+						[PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS]: {
+							all: true,
+							privateLayout: layoutSetSelection.privateLayout,
+						},
+					},
+				];
+			}
+		)
+	);
+}
+
 export function getNestedPortletDataHandlerControls(
 	portletDataHandlerControl: PortletDataHandlerControl
 ): PortletDataHandlerControl[] {

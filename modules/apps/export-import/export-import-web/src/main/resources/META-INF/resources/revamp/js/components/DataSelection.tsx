@@ -8,6 +8,7 @@ import {useField} from 'formik';
 import React from 'react';
 
 import {PortletDataHandlerSection} from '../types/portletDataHandler';
+import {selectAllLayouts} from '../utils/contentSelection';
 import {PageTreeModalConfiguration} from './PageTreeModal';
 import SectionHeader from './SectionHeader';
 import {DateFilterValues, toDateFilter} from './date_filter';
@@ -16,6 +17,8 @@ import {
 	FormikFieldContentSelector,
 	FormikFieldDateFilter,
 } from './forms/formik';
+
+import type {ContentSelection} from './forms/content_selector/ContentSelector';
 
 const LABEL_ID = 'dataSelection-label';
 
@@ -64,6 +67,9 @@ export default function DataSelection(props: Props) {
 		title = Liferay.Language.get('data-selection'),
 	} = props;
 
+	const [{value: contentSelection}, , contentSelectionHelpers] = useField<
+		ContentSelection | null | undefined
+	>('contentSelection');
 	const [{value: dateFilterValues}] =
 		useField<DateFilterValues>('dateFilterValues');
 
@@ -91,7 +97,13 @@ export default function DataSelection(props: Props) {
 						itemsCount={props.itemsCount}
 						lastPublishDate={props.lastPublishDate}
 						name="dateFilterValues"
-						onApplyFilter={props.onApplyFilter}
+						onApplyFilter={(dateFilterValues) => {
+							contentSelectionHelpers.setValue(
+								selectAllLayouts(contentSelection)
+							);
+
+							props.onApplyFilter(dateFilterValues);
+						}}
 						timeZoneId={timeZoneId}
 					/>
 				</>
