@@ -23,11 +23,17 @@ import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Daniel Raposo
@@ -81,6 +87,38 @@ public class BackgroundTaskUtil {
 
 			throw new NoSuchBackgroundTaskException();
 		}
+	}
+
+	public static List<BackgroundTask> filterAndSortByName(
+		List<BackgroundTask> backgroundTasks, String search, Sort[] sorts) {
+
+		Map<BackgroundTask, String> names = new HashMap<>();
+
+		if (Validator.isNotNull(search)) {
+			backgroundTasks = ListUtil.filter(
+				backgroundTasks,
+				backgroundTask -> StringUtil.containsIgnoreCase(
+					names.computeIfAbsent(
+						backgroundTask, BackgroundTaskUtil::getName),
+					search));
+		}
+
+		if (ArrayUtil.isEmpty(sorts) ||
+			!Objects.equals(sorts[0].getFieldName(), "name")) {
+
+			return backgroundTasks;
+		}
+
+		Comparator<BackgroundTask> comparator = Comparator.comparing(
+			backgroundTask -> names.computeIfAbsent(
+				backgroundTask, BackgroundTaskUtil::getName),
+			String.CASE_INSENSITIVE_ORDER);
+
+		if (sorts[0].isReverse()) {
+			comparator = comparator.reversed();
+		}
+
+		return ListUtil.sort(backgroundTasks, comparator);
 	}
 
 	public static String getErrorMessage(
