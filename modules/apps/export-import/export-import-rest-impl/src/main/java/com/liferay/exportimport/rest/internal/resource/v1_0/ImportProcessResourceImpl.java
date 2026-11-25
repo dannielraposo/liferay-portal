@@ -258,16 +258,11 @@ public class ImportProcessResourceImpl extends BaseImportProcessResourceImpl {
 	}
 
 	private List<BackgroundTask> _getBackgroundTasks(
-			Long creatorId, long groupId, Pagination pagination,
-			String portletId, String search, Sort[] sorts, Integer status)
-		throws Exception {
-
-		PermissionUtil.checkImportPermission(
-			contextCompany.getCompanyId(), groupId,
-			PermissionUtil.getGroupActionId(portletId));
+		Long creatorId, long groupId, Pagination pagination, String search,
+		Sort[] sorts, Integer status) {
 
 		DynamicQuery dynamicQuery = _getDynamicQuery(
-			creatorId, groupId, portletId, search, status);
+			creatorId, groupId, null, search, status);
 
 		BackgroundTaskUtil.addOrders(dynamicQuery, sorts);
 
@@ -327,16 +322,45 @@ public class ImportProcessResourceImpl extends BaseImportProcessResourceImpl {
 
 		long groupId = group.getGroupId();
 
+		PermissionUtil.checkImportPermission(
+			contextCompany.getCompanyId(), groupId,
+			PermissionUtil.getGroupActionId(portletId));
+
+		if (Validator.isNotNull(portletId)) {
+			List<BackgroundTask> backgroundTasks = _getPortletBackgroundTasks(
+				creatorId, groupId, portletId, search, sorts, status);
+
+			return Page.of(
+				transform(
+					ListUtil.subList(
+						backgroundTasks, pagination.getStartPosition(),
+						pagination.getEndPosition()),
+					this::_toImportProcess),
+				pagination, backgroundTasks.size());
+		}
+
 		return Page.of(
 			transform(
 				_getBackgroundTasks(
-					creatorId, groupId, pagination, portletId, search, sorts,
-					status),
+					creatorId, groupId, pagination, search, sorts, status),
 				this::_toImportProcess),
 			pagination,
 			_backgroundTaskLocalService.dynamicQueryCount(
-				_getDynamicQuery(
-					creatorId, groupId, portletId, search, status)));
+				_getDynamicQuery(creatorId, groupId, null, search, status)));
+	}
+
+	private List<BackgroundTask> _getPortletBackgroundTasks(
+		Long creatorId, long groupId, String portletId, String search,
+		Sort[] sorts, Integer status) {
+
+		DynamicQuery dynamicQuery = _getDynamicQuery(
+			creatorId, groupId, portletId, null, status);
+
+		BackgroundTaskUtil.addOrders(dynamicQuery, sorts);
+
+		return BackgroundTaskUtil.filterAndSortByName(
+			_backgroundTaskLocalService.dynamicQuery(dynamicQuery), search,
+			sorts);
 	}
 
 	private ImportProcess _postImportProcess(
