@@ -8,9 +8,11 @@ package com.liferay.exportimport.rest.resource.v1_0.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.blogs.constants.BlogsPortletKeys;
 import com.liferay.exportimport.kernel.background.task.BackgroundTaskExecutorNames;
+import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.lar.ExportImportGroup;
 import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
+import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
 import com.liferay.exportimport.rest.client.dto.v1_0.AssetLibrary;
 import com.liferay.exportimport.rest.client.dto.v1_0.DateRangeDateFilter;
 import com.liferay.exportimport.rest.client.dto.v1_0.ExportPreview;
@@ -78,6 +80,7 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.log.LogCapture;
 import com.liferay.portal.test.log.LoggerTestUtil;
@@ -272,6 +275,8 @@ public class ExportProcessResourceTest
 		exportProcessResource.deleteExportProcess(exportProcess1.getId());
 		exportProcessResource.deleteExportProcess(exportProcess2.getId());
 		exportProcessResource.deleteExportProcess(portletExportProcess.getId());
+
+		_testGetExportProcessesPageWithPortletNames();
 	}
 
 	@Override
@@ -634,7 +639,8 @@ public class ExportProcessResourceTest
 	}
 
 	private ExportProcess _addExportProcess(
-			long groupId, String name, String taskExecutorClassName)
+			long exportImportConfigurationId, long groupId, String name,
+			String taskExecutorClassName)
 		throws Exception {
 
 		try (LogCapture logCapture1 = LoggerTestUtil.configureLog4JLogger(
@@ -651,7 +657,7 @@ public class ExportProcessResourceTest
 					taskExecutorClassName,
 					HashMapBuilder.<String, Serializable>put(
 						"exportImportConfigurationId",
-						RandomTestUtil.randomLong()
+						exportImportConfigurationId
 					).build(),
 					null);
 
@@ -664,6 +670,14 @@ public class ExportProcessResourceTest
 				}
 			};
 		}
+	}
+
+	private ExportProcess _addExportProcess(
+			long groupId, String name, String taskExecutorClassName)
+		throws Exception {
+
+		return _addExportProcess(
+			RandomTestUtil.randomLong(), groupId, name, taskExecutorClassName);
 	}
 
 	private Layout _addLayoutWithPortlet(Group group, String portletId)
@@ -695,6 +709,26 @@ public class ExportProcessResourceTest
 			HashMapBuilder.<String, Serializable>put(
 				"textField", RandomTestUtil.randomString()
 			).build());
+	}
+
+	private ExportProcess _addPortletExportProcess(
+			String name, String portletId)
+		throws Exception {
+
+		ExportImportConfiguration exportImportConfiguration =
+			_exportImportConfigurationLocalService.
+				addDraftExportImportConfiguration(
+					TestPropsValues.getUserId(),
+					ExportImportConfigurationConstants.TYPE_EXPORT_PORTLET,
+					HashMapBuilder.<String, Serializable>put(
+						"name", name
+					).build());
+
+		return _addExportProcess(
+			exportImportConfiguration.getExportImportConfigurationId(),
+			_getCompanyGroupId(), portletId,
+			BackgroundTaskExecutorNames.
+				PORTLET_EXPORT_BACKGROUND_TASK_EXECUTOR);
 	}
 
 	private <T> void _assertExportedExternalReferenceCodes(
@@ -906,6 +940,54 @@ public class ExportProcessResourceTest
 		Assert.assertFalse(errorMessage, errorMessage.contains(".java:"));
 		Assert.assertFalse(errorMessage, errorMessage.contains("\tat "));
 		Assert.assertFalse(errorMessage, errorMessage.contains("java.lang."));
+	}
+
+	private void _testGetExportProcessesPageWithPortletNames()
+		throws Exception {
+
+		String name1 = "A" + RandomTestUtil.randomString();
+		String portletId = RandomTestUtil.randomString();
+
+		ExportProcess exportProcess1 = _addPortletExportProcess(
+			name1, portletId);
+		ExportProcess exportProcess2 = _addPortletExportProcess(
+			"b" + RandomTestUtil.randomString(), portletId);
+
+		Page<ExportProcess> page = exportProcessResource.getExportProcessesPage(
+			null, portletId, null, null, Pagination.of(1, 10), "name:asc");
+
+		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(
+			Arrays.asList(exportProcess1.getId(), exportProcess2.getId()),
+			TransformUtil.transform(page.getItems(), ExportProcess::getId));
+
+		page = exportProcessResource.getExportProcessesPage(
+			null, portletId, null, null, Pagination.of(1, 10), "name:desc");
+
+		Assert.assertEquals(
+			Arrays.asList(exportProcess2.getId(), exportProcess1.getId()),
+			TransformUtil.transform(page.getItems(), ExportProcess::getId));
+
+		page = exportProcessResource.getExportProcessesPage(
+			null, portletId, StringUtil.toLowerCase(name1), null,
+			Pagination.of(1, 10), null);
+
+		Assert.assertEquals(
+			Collections.singletonList(exportProcess1.getId()),
+			TransformUtil.transform(page.getItems(), ExportProcess::getId));
+
+		page = exportProcessResource.getExportProcessesPage(
+			null, portletId, portletId, null, Pagination.of(1, 10), null);
+
+		Assert.assertEquals(0, page.getTotalCount());
+
+		assertHttpResponseStatusCode(
+			404,
+			_exportProcessResource.getExportProcessesPageHttpResponse(
+				null, portletId, null, null, Pagination.of(1, 10), null));
+
+		exportProcessResource.deleteExportProcess(exportProcess1.getId());
+		exportProcessResource.deleteExportProcess(exportProcess2.getId());
 	}
 
 	private void _testPostExportProcessWhenFeatureFlagIsDisabled(
@@ -1710,6 +1792,10 @@ public class ExportProcessResourceTest
 
 	@Inject
 	private BackgroundTaskLocalService _backgroundTaskLocalService;
+
+	@Inject
+	private ExportImportConfigurationLocalService
+		_exportImportConfigurationLocalService;
 
 	@Inject
 	private ExportImportHelper _exportImportHelper;
