@@ -46,6 +46,7 @@ import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.test.util.ObjectDefinitionTestUtil;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.UnsafeSupplier;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.background.task.model.BackgroundTask;
@@ -76,6 +77,7 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TempFileEntryUtil;
 import com.liferay.portal.test.log.LogCapture;
 import com.liferay.portal.test.log.LoggerTestUtil;
@@ -87,6 +89,7 @@ import com.liferay.staging.StagingGroupHelper;
 import java.io.File;
 import java.io.Serializable;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -205,6 +208,8 @@ public class ImportProcessResourceTest
 		importProcessResource.deleteImportProcess(importProcess1.getId());
 		importProcessResource.deleteImportProcess(importProcess2.getId());
 		importProcessResource.deleteImportProcess(portletImportProcess.getId());
+
+		_testGetImportProcessesPageWithPortletNames();
 	}
 
 	@Override
@@ -562,7 +567,8 @@ public class ImportProcessResourceTest
 	}
 
 	private ImportProcess _addImportProcess(
-			long groupId, String name, String taskExecutorClassName)
+			long exportImportConfigurationId, long groupId, String name,
+			String taskExecutorClassName)
 		throws Exception {
 
 		try (LogCapture logCapture1 = LoggerTestUtil.configureLog4JLogger(
@@ -579,7 +585,7 @@ public class ImportProcessResourceTest
 					taskExecutorClassName,
 					HashMapBuilder.<String, Serializable>put(
 						"exportImportConfigurationId",
-						RandomTestUtil.randomLong()
+						exportImportConfigurationId
 					).build(),
 					null);
 
@@ -594,6 +600,14 @@ public class ImportProcessResourceTest
 		}
 	}
 
+	private ImportProcess _addImportProcess(
+			long groupId, String name, String taskExecutorClassName)
+		throws Exception {
+
+		return _addImportProcess(
+			RandomTestUtil.randomLong(), groupId, name, taskExecutorClassName);
+	}
+
 	private Layout _addLayoutWithPortlet(Group group, String portletId)
 		throws Exception {
 
@@ -602,6 +616,26 @@ public class ImportProcessResourceTest
 		LayoutTestUtil.addPortletToLayout(layout, portletId);
 
 		return layout;
+	}
+
+	private ImportProcess _addPortletImportProcess(
+			String name, String portletId)
+		throws Exception {
+
+		ExportImportConfiguration exportImportConfiguration =
+			ExportImportConfigurationLocalServiceUtil.
+				addDraftExportImportConfiguration(
+					TestPropsValues.getUserId(),
+					ExportImportConfigurationConstants.TYPE_IMPORT_PORTLET,
+					HashMapBuilder.<String, Serializable>put(
+						"name", name
+					).build());
+
+		return _addImportProcess(
+			exportImportConfiguration.getExportImportConfigurationId(),
+			_getCompanyGroupId(), portletId,
+			BackgroundTaskExecutorNames.
+				PORTLET_IMPORT_BACKGROUND_TASK_EXECUTOR);
 	}
 
 	private void _assertTempFileEntryId(
@@ -847,6 +881,54 @@ public class ImportProcessResourceTest
 		Assert.assertFalse(errorMessage, errorMessage.contains(".java:"));
 		Assert.assertFalse(errorMessage, errorMessage.contains("\tat "));
 		Assert.assertFalse(errorMessage, errorMessage.contains("java.lang."));
+	}
+
+	private void _testGetImportProcessesPageWithPortletNames()
+		throws Exception {
+
+		String name1 = "A" + RandomTestUtil.randomString();
+		String portletId = RandomTestUtil.randomString();
+
+		ImportProcess importProcess1 = _addPortletImportProcess(
+			name1, portletId);
+		ImportProcess importProcess2 = _addPortletImportProcess(
+			"b" + RandomTestUtil.randomString(), portletId);
+
+		Page<ImportProcess> page = importProcessResource.getImportProcessesPage(
+			null, portletId, null, null, Pagination.of(1, 10), "name:asc");
+
+		Assert.assertEquals(2, page.getTotalCount());
+		Assert.assertEquals(
+			Arrays.asList(importProcess1.getId(), importProcess2.getId()),
+			TransformUtil.transform(page.getItems(), ImportProcess::getId));
+
+		page = importProcessResource.getImportProcessesPage(
+			null, portletId, null, null, Pagination.of(1, 10), "name:desc");
+
+		Assert.assertEquals(
+			Arrays.asList(importProcess2.getId(), importProcess1.getId()),
+			TransformUtil.transform(page.getItems(), ImportProcess::getId));
+
+		page = importProcessResource.getImportProcessesPage(
+			null, portletId, StringUtil.toLowerCase(name1), null,
+			Pagination.of(1, 10), null);
+
+		Assert.assertEquals(
+			Collections.singletonList(importProcess1.getId()),
+			TransformUtil.transform(page.getItems(), ImportProcess::getId));
+
+		page = importProcessResource.getImportProcessesPage(
+			null, portletId, portletId, null, Pagination.of(1, 10), null);
+
+		Assert.assertEquals(0, page.getTotalCount());
+
+		assertHttpResponseStatusCode(
+			404,
+			_importProcessResource.getImportProcessesPageHttpResponse(
+				null, portletId, null, null, Pagination.of(1, 10), null));
+
+		importProcessResource.deleteImportProcess(importProcess1.getId());
+		importProcessResource.deleteImportProcess(importProcess2.getId());
 	}
 
 	private void _testPostImportProcessWhenFeatureFlagIsDisabled(
