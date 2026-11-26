@@ -66,10 +66,8 @@ import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -335,34 +333,9 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 
 		BackgroundTaskUtil.addOrders(dynamicQuery, sorts);
 
-		List<BackgroundTask> backgroundTasks =
-			_backgroundTaskLocalService.dynamicQuery(dynamicQuery);
-
-		if (Validator.isNotNull(search)) {
-			backgroundTasks = ListUtil.filter(
-				backgroundTasks,
-				backgroundTask -> {
-					String name = StringUtil.toLowerCase(
-						BackgroundTaskUtil.getName(backgroundTask));
-
-					return name.contains(StringUtil.toLowerCase(search));
-				});
-		}
-
-		if (ArrayUtil.isEmpty(sorts) ||
-			!Objects.equals(sorts[0].getFieldName(), "name")) {
-
-			return backgroundTasks;
-		}
-
-		Comparator<BackgroundTask> comparator = Comparator.comparing(
-			BackgroundTaskUtil::getName, String.CASE_INSENSITIVE_ORDER);
-
-		if (sorts[0].isReverse()) {
-			comparator = comparator.reversed();
-		}
-
-		return ListUtil.sort(backgroundTasks, comparator);
+		return BackgroundTaskUtil.filterAndSortByName(
+			_backgroundTaskLocalService.dynamicQuery(dynamicQuery), search,
+			sorts);
 	}
 
 	private List<Long> _getPublishGroupIds(Group stagingGroup) {
